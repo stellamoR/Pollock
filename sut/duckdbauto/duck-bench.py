@@ -12,6 +12,12 @@ PARAM_DIR = abspath(f'/{DATASET}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{DATASET}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{DATASET}/')
 
+# Ensure required directories exist
+os.makedirs(IN_DIR, exist_ok=True)
+os.makedirs(PARAM_DIR, exist_ok=True)
+os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs(TIME_DIR, exist_ok=True)
+
 N_REPETITIONS = 3
 
 times_dict = {}
