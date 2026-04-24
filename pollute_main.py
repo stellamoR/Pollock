@@ -1,17 +1,23 @@
 from copy import deepcopy
+import argparse
 import os
 from pollock.CSVFile import CSVFile
 import pollock.polluters_stdlib as pl
 from sut.utils import print
 
-OUT_CSV_PATH = "./polluted_files/csv/"
-OUT_CLEAN_PATH = "./polluted_files/clean/"
-OUT_PARAMETERS_PATH = "./polluted_files/parameters/"
+parser = argparse.ArgumentParser()
+parser.add_argument("--source", default="./results/source.csv", help="Path to the source CSV file to pollute")
+parser.add_argument("--output", default="./polluted_files", help="Root output directory for polluted files")
+args = parser.parse_args()
 
-os.system('mkdir -p ' + OUT_CSV_PATH)
-os.system('mkdir -p ' + OUT_CLEAN_PATH)
-os.system('mkdir -p ' + OUT_PARAMETERS_PATH)
-os.system('cd ' + OUT_CSV_PATH + ' && rm *.csv')
+OUT_CSV_PATH = os.path.join(args.output, "csv/")
+OUT_CLEAN_PATH = os.path.join(args.output, "clean/")
+OUT_PARAMETERS_PATH = os.path.join(args.output, "parameters/")
+
+os.makedirs(OUT_CSV_PATH, exist_ok=True)
+os.makedirs(OUT_CLEAN_PATH, exist_ok=True)
+os.makedirs(OUT_PARAMETERS_PATH, exist_ok=True)
+os.system('cd ' + OUT_CSV_PATH + ' && rm -f *.csv')
 
 def execute_polluter(file: CSVFile, polluter, new_filename=None, *args, **kwargs):
     t = deepcopy(file)
@@ -25,7 +31,7 @@ def execute_polluter(file: CSVFile, polluter, new_filename=None, *args, **kwargs
     t.write_parameters(OUT_PARAMETERS_PATH)
 
 
-f = CSVFile("./results/source.csv", quote_all=True)
+f = CSVFile(args.source, quote_all=True)
 
 # Returns the source file : 1 file
 execute_polluter(f, pl.dummyPolluter, "source.csv")
@@ -40,9 +46,9 @@ execute_polluter(f, pl.changeNumberRows, target_number_rows=f.row_count, remove_
 execute_polluter(f, pl.expandColumnHeader, extra_rows=1, new_filename="file_header_multirow_2.csv")  # 1 regular, on multiple rows
 execute_polluter(f, pl.expandColumnHeader, extra_rows=2, new_filename="file_header_multirow_3.csv")  # 1 regular, on multiple rows
 execute_polluter(f, pl.addPreamble, n_rows=1, delimiters=True, emptyrow=True, new_filename="file_preamble.csv")  # delimited, with empty
-execute_polluter(f, pl.addTable, new_filename="file_multitable_less.csv", n_rows=83, n_cols=8, empty_boundary=False)
-execute_polluter(f, pl.addTable, new_filename="file_multitable_same.csv", n_rows=83, n_cols=9, empty_boundary=False)
-execute_polluter(f, pl.addTable, new_filename="file_multitable_more.csv", n_rows=83, n_cols=10, empty_boundary=False)
+execute_polluter(f, pl.addTable, new_filename="file_multitable_less.csv", n_rows=f.row_count-1, n_cols=f.col_count-1, empty_boundary=False)
+execute_polluter(f, pl.addTable, new_filename="file_multitable_same.csv", n_rows=f.row_count-1, n_cols=f.col_count, empty_boundary=False)
+execute_polluter(f, pl.addTable, new_filename="file_multitable_more.csv", n_rows=f.row_count-1, n_cols=f.col_count+1, empty_boundary=False)
 
 # Data rows: 2 files
 execute_polluter(f, pl.changeNumberRows, new_filename="file_header_only.csv", target_number_rows=1)
