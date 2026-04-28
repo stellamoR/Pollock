@@ -35,6 +35,7 @@ for idx,file in enumerate(benchmark_files):
     kw["strict_mode"] = False
     kw["ignore_errors"] = True
     kw["null_padding"] = True
+    kw["auto_type_candidates"] = ['NULL', 'BOOLEAN', 'BIGINT', 'DOUBLE', 'VARCHAR'] # exclude timestamp options as they get written to the solution file in a different format, leading to an error where semantically everything was correct
 
     for time_rep in range(N_REPETITIONS):
         con = duckdb.connect()
