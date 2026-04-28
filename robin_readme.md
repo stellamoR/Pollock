@@ -2,21 +2,31 @@
 
 ## 1. Pollute your file
 
-Mount your source CSV and a desired output directory into the pollution container:
+Use the helper script from the repository root:
 
 ```bash
-docker-compose run --rm \
-  -v $(pwd)/myfile.csv:/app/myfile.csv \
-  -v $(pwd)/output:/app/output \
-  pollution \
-  python3 /app/pollute_main.py --source /app/myfile.csv --output /app/output
+scripts/pollute.sh myfile.csv output/
 ```
 
-Polluted variants land in `output/csv/`, clean versions in `output/clean/`, parse parameters in `output/parameters/`.
+This mounts your file into the pollution container and runs all pollution variants. When it finishes you'll find:
 
-If you omit `--source` and `--output`, defaults are `./results/source.csv` and `./polluted_files`, so `docker-compose run --rm pollution` still works as before.
+| Directory | Contents |
+|---|---|
+| `output/csv/` | Polluted CSV variants |
+| `output/clean/` | Clean reference versions |
+| `output/parameters/` | Dialect parameters per file (JSON) |
 
-## 2. Run a benchmark SUT
+> **Note (manual alternative):** If you prefer to run the Docker command yourself, or need more control:
+> ```bash
+> docker-compose run --rm \
+>   -v $(pwd)/myfile.csv:/app/myfile.csv \
+>   -v $(pwd)/output:/app/output \
+>   pollution \
+>   python3 /app/pollute_main.py --source /app/myfile.csv --output /app/output
+> ```
+> Omitting `--source` and `--output` falls back to `./results/source.csv` and `./polluted_files`.
+
+## 2. Run a benchmark SUT (example DuckDBParse)
 
 Each SUT reads from `/polluted_files` inside the container. Mount your output directory there:
 
