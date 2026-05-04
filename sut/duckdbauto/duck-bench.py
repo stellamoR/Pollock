@@ -35,7 +35,7 @@ for idx,file in enumerate(benchmark_files):
     kw["strict_mode"] = False
     kw["ignore_errors"] = True
     kw["null_padding"] = True
-    kw["auto_type_candidates"] = ['NULL', 'BOOLEAN', 'BIGINT', 'DOUBLE', 'VARCHAR'] # exclude timestamp options as they get written to the solution file in a different format, leading to an error where semantically everything was correct
+    kw["auto_type_candidates"] = ['NULL', 'BOOLEAN', 'BIGINT', 'DOUBLE', 'VARCHAR'] # exclude timestamp type as they get written to the solution file in a different format, leading to an error where semantically everything was correct (Pollock shows an error because "00:00" is a different string from "00:00:00")
 
     for time_rep in range(N_REPETITIONS):
         con = duckdb.connect()
