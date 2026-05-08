@@ -80,3 +80,6 @@ docker-compose run --rm \
 ```
 
 Aggregate scores are saved to `results/aggregate_results_polluted_files.csv`.
+
+Note: The weighted pollock score might be off when using a custom source file because the authors calculated the weights based on the number of files generated with their source.csv and do not update them for other csvs.
+
