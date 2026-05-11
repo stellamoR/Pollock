@@ -140,10 +140,18 @@ def main():
             weighted_score = sum(partial_mean)
             aggregate_df.loc[sut, "pollock_weighted"] = weighted_score
         # print("\n",aggregate_df.loc[SUT_ORDER][["simple","weighted"]])
-        print("\n",aggregate_df.loc[SUT_ORDER][[c for c in aggregate_df.columns if "_" in c]])
+        present = [s for s in SUT_ORDER if s in aggregate_df.index]
+        missing = [s for s in SUT_ORDER if s not in aggregate_df.index]
+        if missing:
+            print(f"Note: {len(missing)} SUT(s) from SUT_ORDER not in results and skipped: {missing}")
+        print("\n",aggregate_df.loc[present][[c for c in aggregate_df.columns if "_" in c]])
 
     else:
-        print("\n", aggregate_df.loc[SUT_ORDER][["success","headerf1", "cellf1", "recordf1", "pollock_simple"]])
+        present = [s for s in SUT_ORDER if s in aggregate_df.index]
+        missing = [s for s in SUT_ORDER if s not in aggregate_df.index]
+        if missing:
+            print(f"Note: {len(missing)} SUT(s) from SUT_ORDER not in results and skipped: {missing}")
+        print("\n", aggregate_df.loc[present][["success","headerf1", "cellf1", "recordf1", "pollock_simple"]])
 
     global_df.to_csv(RESULT_DIR + f"/global_results_{dataset}.csv")
     aggregate_df.to_csv(RESULT_DIR + f"/aggregate_results_{dataset}.csv")
