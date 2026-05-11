@@ -18,8 +18,8 @@ import time
 
 dataset = os.environ["DATASET"]
 sut = 'libreoffice'
-IN_DIR = abspath(f'/{dataset}/csv/')
-PARAM_DIR = abspath(f'/{dataset}/parameters')
+IN_DIR = abspath(f'/data/{dataset}/csv/')
+PARAM_DIR = abspath(f'/data/{dataset}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{dataset}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{dataset}/')
 TMP_DIR = abspath(f'/results/{sut}/loading/xlsx/')

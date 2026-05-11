@@ -7,8 +7,8 @@ import time
 
 sut = 'clevercs'
 DATASET = os.environ['DATASET']
-IN_DIR = abspath(f'/{DATASET}/csv/')
-PARAM_DIR = abspath(f'/{DATASET}/parameters')
+IN_DIR = abspath(f'/data/{DATASET}/csv/')
+PARAM_DIR = abspath(f'/data/{DATASET}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{DATASET}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{DATASET}')
 N_REPETITIONS = 3

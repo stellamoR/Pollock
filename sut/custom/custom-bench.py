@@ -12,7 +12,7 @@ from solution import parse_csv
 
 sut = 'custom'
 DATASET = os.environ.get('DATASET', 'polluted_files')
-IN_DIR = join(REPO_ROOT, DATASET, 'csv')
+IN_DIR = join(REPO_ROOT, 'data', DATASET, 'csv')
 OUT_DIR = join(REPO_ROOT, 'results', sut, DATASET, 'loading')
 TIME_DIR = join(REPO_ROOT, 'results', sut, DATASET)
 

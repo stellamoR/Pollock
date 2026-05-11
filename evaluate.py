@@ -28,7 +28,7 @@ SUB_MEASURES = {"table" : "file_double.*|file_header.*|file_no.*|file_one.*|file
 
 def evaluate_single_file(filename:str, dataset:str, sut:str, verbose=False, n_jobs=1):
     sut_dir = f"results/{sut}/{dataset}/loading/"
-    clean_path = f"{dataset}/clean/{filename}"
+    clean_path = f"data/{dataset}/clean/{filename}"
     loaded_path = f"{sut_dir}/{filename}_converted.csv"
 
     dict_measures = {"file": filename}
@@ -71,12 +71,12 @@ def evaluate_single_run(files: List[str], dataset: str, result_file:str, sut:str
     if os.cpu_count()< n_jobs:
         file_measures = list(map(lambda f: evaluate_single_file(filename=f, dataset=dataset, sut=sut, verbose=verbose), files))
     else:
-        tiny_files = [f for f in files if os.path.getsize(dataset+"/csv/"+f)/ 1024 < 500]
+        tiny_files = [f for f in files if os.path.getsize(f"data/{dataset}/csv/{f}")/ 1024 < 500]
         args = [{"filename" : f, "dataset":dataset, "sut": sut, "verbose": verbose} for f in tiny_files]
         tiny_file_measures = pqdm(args, evaluate_single_file, n_jobs=n_jobs, argument_type="kwargs")
 
         print("Evaluating large files...")
-        large_filenames = [f for f in files if os.path.getsize(dataset+"/csv/"+f)/ 1024 >= 500]
+        large_filenames = [f for f in files if os.path.getsize(f"data/{dataset}/csv/{f}")/ 1024 >= 500]
         large_file_measures = []
         for f in large_filenames:
             large_file_measures.append(evaluate_single_file(f, dataset, sut, verbose=verbose, n_jobs=n_jobs))
@@ -104,7 +104,7 @@ def main():
     verbose = bool(args.verbose)
     systems = [s for s in next(os.walk(f"{RESULT_DIR}"))[1] if not (s== "archives")]
 
-    files= [f for f in os.listdir(dataset+"/csv") if f.endswith("csv")]
+    files= [f for f in os.listdir(f"data/{dataset}/csv") if f.endswith("csv")]
     aggregate = []
     global_df = pd.DataFrame({"file": files})
     for s in systems:

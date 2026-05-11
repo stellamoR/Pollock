@@ -217,8 +217,8 @@ def main():
         help="Root results directory (default: results)"
     )
     parser.add_argument(
-        "--polluted-dir", default="polluted_files",
-        help="Root polluted files directory (default: polluted_files)"
+        "--polluted-dir", default="data/polluted_files",
+        help="Root polluted files directory (default: data/polluted_files)"
     )
     parser.add_argument(
         "--output", default=None,

@@ -1,7 +1,7 @@
 sut <- 'rcsv'
 dataset <- Sys.getenv('DATASET')
-IN_DIR <- paste0('/', dataset, '/csv/')
-PARAM_DIR <- paste0('/', dataset, '/parameters/')
+IN_DIR <- paste0('/data/', dataset, '/csv/')
+PARAM_DIR <- paste0('/data/', dataset, '/parameters/')
 OUT_DIR <- paste0('/results/', sut, '/', dataset, '/loading/')
 TIME_DIR <- paste0('/results/', sut, '/', dataset, '/')
 N_REPETITIONS <- 3

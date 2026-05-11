@@ -53,8 +53,8 @@ def connect_to_db():
 
 dataset = os.environ["DATASET"]
 sut = 'mariadb'
-IN_DIR = abspath(f'/{dataset}/csv/')
-PARAM_DIR = abspath(f'/{dataset}/parameters')
+IN_DIR = abspath(f'/data/{dataset}/csv/')
+PARAM_DIR = abspath(f'/data/{dataset}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{dataset}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{dataset}/')
 

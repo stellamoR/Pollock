@@ -15,8 +15,8 @@ import org.json.JSONObject;
 public class JCSV {
     public static final String dataset = System.getenv("DATASET");
     public static final String sut = "univocity";
-    public static final String IN_DIR = "/"+dataset+"/csv/";
-    public static final String PARAM_DIR = "/"+dataset+"/parameters/";
+    public static final String IN_DIR = "/data/"+dataset+"/csv/";
+    public static final String PARAM_DIR = "/data/"+dataset+"/parameters/";
     public static final String OUT_DIR = "/results/"+sut+"/"+dataset+"/loading/";
     public static final String TIME_DIR = "/results/"+sut+"/"+dataset;
 

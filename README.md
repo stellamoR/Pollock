@@ -35,8 +35,8 @@ The structure of the repository is the following:
 
 - `open_data_crawl`: contains the scripts used to crawl the open data portals of different countries to sample the statistics about file types.
 - `survey`: contains the csv files used in the paper survey, and their annotations with respect to dialect and pollutions.
-- `survey_sample`: contains the sample of 100 files used in the paper experiment, with their clean versions and loading parameters.
-- `polluted_files`: contains the generated polluted files for the Pollock benchmark.
+- `data/survey_sample`: contains the sample of 100 files used in the paper experiment, with their clean versions and loading parameters.
+- `data/polluted_files`: contains the generated polluted files for the Pollock benchmark.
 - `pollock` is the main source folder for the Pollock benchmark: it contains the files necessary to generate the polluted versions of an input file (`polluters_base.py` and `polluters_stdlib.py`) as well as the files with the metrics to evaluate results of data loading.
 - `sut` is the source folder that contains the scripts used to benchmark given systems. These scripts can be in bash, python, or heterogeneous format, depending on the specific tool that is under test.
 - `results` contains the results of loading both the polluted files and the survey files for each of the systems evaluated. The folder will also contain `.csv` files that summarize the evaluation results - for each of the systems under test and for all of them together (`aggregate_results_{dataset}.csv`, `global_results_{dataset}.csv`).
@@ -65,14 +65,14 @@ The following command will build the docker image to generate the polluted files
 
     docker-compose up --build pollution
 
-After this step, the set of benchmark files are contained in the folder `polluted_files`.
+After this step, the set of benchmark files are contained in the folder `data/polluted_files`.
 Inside this folder there are three sub-folders: `csv` containing the generated polluted files in the .csv format, 
 `clean` containing the cleaned versions of the generated files, and `parameters` containing JSON files storing the corresponding loading parameters for each file.
 The files in the repository uses Git Large File Storage (LFS), so to correctly load their contents use:
 ```git lfs checkout```.
 
 ### Step 2: Loading polluted files in each SUT
-Once the folder `polluted_files/` contains the polluted files, the next step is to load them in each of the systems under test. 
+Once the folder `data/polluted_files/` contains the polluted files, the next step is to load them in each of the systems under test. 
 If a unix-based systems is used, the following one-liner executes loading for all SUT:
 
     chmod +x benchmark.sh; ./benchmark.sh    

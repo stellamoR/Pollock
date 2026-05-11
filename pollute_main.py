@@ -7,7 +7,7 @@ from sut.utils import print
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--source", default="./results/source.csv", help="Path to the source CSV file to pollute")
-parser.add_argument("--output", default="./polluted_files", help="Root output directory for polluted files")
+parser.add_argument("--output", default="./data/polluted_files", help="Root output directory for polluted files")
 args = parser.parse_args()
 
 OUT_CSV_PATH = os.path.join(args.output, "csv/")

@@ -24,8 +24,7 @@ services:
       dockerfile: ./sut/maria/Dockerfile
     volumes:
       - ./results/mariadb:/results/mariadb
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/maria/:/app/
       - ./sut/utils.py:/app/utils.py
       - mariadb-tmp:/tmp
@@ -58,8 +57,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/mysql:/results/mysql
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - mysql-tmp:/tmp
       - ./sut/my/:/app/
       - ./sut/utils.py:/app/utils.py
@@ -79,8 +77,7 @@ services:
     volumes:
       - postgres-tmp:/tmp
       - ./results/postgres:/results/postgres
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
     networks:
       postgres-nw:
   postgres-client:
@@ -92,8 +89,7 @@ services:
     volumes:
       - postgres-tmp:/tmp
       - ./results/postgres:/results/postgres
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/utils.py:/app/utils.py
       - ./sut/postgres/:/app/
     depends_on:
@@ -108,8 +104,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/sqlite:/results/sqlite
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/sqlite/:/app/
       - ./sut/utils.py:/app/utils.py
     networks:
@@ -122,8 +117,7 @@ services:
       dockerfile: ./sut/pandas/Dockerfile
     volumes:
       - ./results/pandas:/results/pandas
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/pandas/:/app/
       - ./sut/utils.py:/app/utils.py
   duckdbparse-client:
@@ -134,8 +128,7 @@ services:
       dockerfile: ./sut/duckdbparse/Dockerfile
     volumes:
       - ./results/duckdbparse:/results/duckdbparse
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/duckdbparse/:/app/
       - ./sut/utils.py:/app/utils.py
   duckdbauto-client:
@@ -146,8 +139,7 @@ services:
       dockerfile: ./sut/duckdbauto/Dockerfile
     volumes:
       - ./results/duckdbauto:/results/duckdbauto
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/duckdbauto/:/app/
       - ./sut/utils.py:/app/utils.py
   opencsv-client:
@@ -158,8 +150,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/opencsv:/results/opencsv
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/opencsv/:/app/
   pycsv-client:
     environment:
@@ -169,8 +160,7 @@ services:
       dockerfile: ./sut/pycsv/Dockerfile
     volumes:
       - ./results/pycsv:/results/pycsv
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/pycsv/:/app/
       - ./sut/utils.py:/app/utils.py
   rcsv-client:
@@ -181,8 +171,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/rcsv:/results/rcsv
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/rcsv/:/app/
   rhypoparsr-client:
     build:
@@ -192,8 +181,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/rhypoparsr:/results/rhypoparsr
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/rhypoparsr/:/app/
   clevercs-client:
     environment:
@@ -203,8 +191,7 @@ services:
       dockerfile: ./sut/clevercs/Dockerfile
     volumes:
       - ./results/clevercs:/results/clevercs
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/clevercs/:/app/
       - ./sut/utils.py:/app/utils.py
   libreoffice-client:
@@ -215,8 +202,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/libreoffice:/results/libreoffice
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/utils.py:/app/utils.py
       - ./sut/libreoffice/:/app/
   univocity-client:
@@ -227,8 +213,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/univocity:/results/univocity
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/univocity/:/app/
   csvcommons-client:
     build:
@@ -238,8 +223,7 @@ services:
       - DATASET=${DATASET}
     volumes:
       - ./results/csvcommons:/results/csvcommons
-      - ./polluted_files:/polluted_files
-      - ./survey_sample:/survey_sample
+      - ./data:/data
       - ./sut/csvcommons/:/app/
   pollution:
     image: pollock_pollution
@@ -248,7 +232,7 @@ services:
       context: .
       dockerfile: Dockerfile-pollution
     volumes:
-      - ./polluted_files:/app/polluted_files
+      - ./data:/app/data
       - ./results/source.csv:/app/results/source.csv
   evaluate:
     image: evaluate
@@ -260,8 +244,7 @@ services:
     command: ["python3", "/app/evaluate.py"]
     volumes:
       - ./results:/app/results
-      - ./polluted_files:/app/polluted_files
-      - ./survey_sample:/app/survey_sample
+      - ./data:/app/data
       - ./evaluate.py:/app/evaluate.py
       - ./sut/utils.py:/app/utils.py
   paper-tables:
@@ -274,8 +257,7 @@ services:
     command: ["python3", "/app/paper_tables.py"]
     volumes:
       - ./results:/app/results
-      - ./polluted_files:/app/polluted_files
-      - ./survey_sample:/app/survey_sample
+      - ./data:/app/data
       - ./paper_tables.py:/app/paper_tables.py
       - ./sut/utils.py:/app/utils.py
 

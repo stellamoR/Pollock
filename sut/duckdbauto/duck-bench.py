@@ -6,9 +6,9 @@ from utils import print, save_time_df, load_parameters
 import pandas as pd
 
 sut='duckdbauto'
-DATASET = 'polluted_files'
-IN_DIR = abspath(f'/{DATASET}/csv/')
-PARAM_DIR = abspath(f'/{DATASET}/parameters')
+DATASET = os.environ.get('DATASET', 'polluted_files')
+IN_DIR = abspath(f'/data/{DATASET}/csv/')
+PARAM_DIR = abspath(f'/data/{DATASET}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{DATASET}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{DATASET}/')
 
