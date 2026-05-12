@@ -69,16 +69,24 @@ def evaluate_single_file(filename:str, dataset:str, sut:str, verbose=False, n_jo
 def evaluate_single_run(files: List[str], dataset: str, result_file:str, sut:str, verbose=False, n_jobs=1):
 
     if os.cpu_count()< n_jobs:
-        file_measures = list(map(lambda f: evaluate_single_file(filename=f, dataset=dataset, sut=sut, verbose=verbose), files))
+        file_measures = []
+        n = len(files)
+        for i, f in enumerate(files):
+            if i % max(1, n // 10) == 0:
+                print(f"  {i}/{n} files...")
+            file_measures.append(evaluate_single_file(filename=f, dataset=dataset, sut=sut, verbose=verbose))
+        print(f"  {n}/{n} files done.")
     else:
         tiny_files = [f for f in files if os.path.getsize(f"data/{dataset}/csv/{f}")/ 1024 < 500]
         args = [{"filename" : f, "dataset":dataset, "sut": sut, "verbose": verbose} for f in tiny_files]
         tiny_file_measures = pqdm(args, evaluate_single_file, n_jobs=n_jobs, argument_type="kwargs")
 
-        print("Evaluating large files...")
         large_filenames = [f for f in files if os.path.getsize(f"data/{dataset}/csv/{f}")/ 1024 >= 500]
         large_file_measures = []
-        for f in large_filenames:
+        if large_filenames:
+            print(f"Evaluating {len(large_filenames)} large file(s)...")
+        for i, f in enumerate(large_filenames, 1):
+            print(f"  [{i}/{len(large_filenames)}] {f}")
             large_file_measures.append(evaluate_single_file(f, dataset, sut, verbose=verbose, n_jobs=n_jobs))
 
         file_measures = tiny_file_measures+large_file_measures
@@ -108,13 +116,14 @@ def main():
     files= [f for f in os.listdir(f"data/{dataset}/csv") if f.endswith("csv")]
     aggregate = []
     global_df = pd.DataFrame({"file": files})
+    eval_systems = systems if UPDATE_SYSTEM is None else [s for s in systems if s == UPDATE_SYSTEM]
     for s in systems:
         result_file = f"{RESULT_DIR}/{s}/{dataset}/{s}_results.csv"
-        if UPDATE_SYSTEM is not None and s != UPDATE_SYSTEM:
-            pass
-        else:
-            print("\nEvaluating", s, "...")
+        if UPDATE_SYSTEM is None or s == UPDATE_SYSTEM:
+            print(f"\n[{eval_systems.index(s) + 1}/{len(eval_systems)}] Evaluating {s}...")
             evaluate_single_run(files=files, dataset=dataset, result_file=result_file, sut=s, n_jobs=N_JOBS, verbose=verbose)
+        if not os.path.exists(result_file):
+            continue
         df = pd.read_csv(result_file)
         d_aggregate = {"".join(key.split("_")[1:]): val for key, val in df.mean(axis=0, numeric_only=True).items()}
         d_aggregate.update({"sut": s})
@@ -136,7 +145,7 @@ def main():
             weights = json.load(f)
         global_df["weight"] = [weights.get(x, -1) for x in global_df.index]
         global_df["normalized_weight"] = global_df["weight"] / sum(global_df["weight"])
-        for sut in systems:
+        for sut in aggregate_df.index:
             partial_mean = global_df[[c for c in global_df.columns if sut in c]].sum(axis=1) * global_df["normalized_weight"]
             weighted_score = sum(partial_mean)
             aggregate_df.loc[sut, "pollock_weighted"] = weighted_score

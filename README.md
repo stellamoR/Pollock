@@ -1,13 +1,13 @@
 !This is not the original readme but an attempt at explaining what is going on from Robin (Student Research Assistant at UTN's Data Systems Lab)
 
 
-# <a name="explanation_pollock_structure"></a>Explanation of the Pollock Benchmark Structure 
+# Explanation of the Pollock Benchmark Structure 
 
 ## 0. Vanilla Benchmark Overview (read first)
 1. The polluter writes polluted versions of the ```results/source.csv``` file into ```data/polluted_files/csv/```. It also writes the expected output of files that are read with the correct grammar (which is known by the polluter) into ```data/polluted_files/clean/```. These serve as the basis for comparison with what the SuTs have read from the polluted files later. On top of this, the polluter also writes the dialect information (e.g. delimiter, column datatypes, quote character etc.) into ```data/polluted_files/parameters/```
 2. The different SuTs read the files from ```data/polluted_files/csv/```. 
 3. The different SuTs write the content of their respective databases/dataframes etc. into ```results/<sut>/polluted_files/loading/``` 
-4. The evaluation script ```evaluate.py``` uses (kind of expensive) Multi-Set operations to compare the outputs of the SuTs (```results/<sut>/polluted_files/loading/```) with the expected clean outputs in (```data/polluted_files/clean/```). It does so on a per-row (record) and per-cell basis. The final score is a mix of loading-success and recall + precision metrics (for formula, see the more detailed explanation of the Evaluation below)
+4. The evaluation script ```evaluate.py``` uses Multi-Set operations to compare the outputs of the SuTs (```results/<sut>/polluted_files/loading/```) with the expected clean outputs in (```data/polluted_files/clean/```). It does so on a per-row (record) and per-cell basis. The final score is a mix of loading-success and recall + precision metrics (for formula, see the more detailed explanation of the Evaluation below)
 
 
 ## 1. Pollution - more details
@@ -57,9 +57,20 @@ The evaluation script writes the scores per file into ```results/<sut>/polluted_
 Since not every pollution is equally likely to be found "in the wild", the Pollock score also comes in a weighted variant, which bases its weightings on a survey of governmental csv files done for the Pollock paper. Note: This weighted score is only accurate when using the original ```results/source.csv``` since the number times a pollution is used depends on the row + column counts of the polluted file and the weights are were hardcoded by the authors in ```pollock_weights.json```
 
 
-# Running the Pipeline 
+# Running the Pipeline for non-Docker SuTs
 
-## 1. Pollution (only if you want to try the pollution on a custom file, otherwise skip)
+## 1. Install Dependencies
+
+Make venv, source it and install the packages from requirements.txt
+```
+python3 -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+## 2. Pollution (only if you want to try the pollution on a custom file, otherwise skip)
 
 Put your csv file file into ```data/<dataset_name>/```
 
@@ -70,7 +81,9 @@ python3 pollute_main.py --source data/<dataset_name>/<your_csv_file>.csv --outpu
 ```
 **Note:** The explanations in ```Explanation of the Pollock Benchmark Structure```, the   ```dataset_name``` is ```polluted_files``` as it is the default one used by the original authors. This one is set in the ```.env``` file as the ```$DATASET``` variable default -> most scripts default back to ```polluted_files``` if no other dataset name is passed.
 
-## 2. Run all Python SuTs:
+## 3. Run all Python SuTs:
+
+python suts: duckdbauto, duckdbparse, pandas, pycsv, clevercsv
 
 ```bash
 scripts/run_python_suts.sh <dataset_name>
@@ -89,12 +102,14 @@ to run a specific python sut against a custom dataset.
 
 
 **Note1:** If you rerun this, make sure to **delete the old results output** before.  ```rm -r results/*/<dataset_name>```  
-**Note2:** there are some other SuTs that have to be run with docker (e.g. because they require java or a db-server)
+**Note2:** there are some other SuTs that have to be run with docker (e.g. because they require java or a db-server). These are not included here. 
 
 
-## 3. Evaluation
+## 4. Evaluation
 
 ```python3 evaluate.py --dataset <dataset_name>```
+
+defaults to ```polluted_files```
 
 
 # Getting Started with your own Approach
@@ -102,9 +117,9 @@ to run a specific python sut against a custom dataset.
 A template for a custom SuT is provided in ```sut/custom```. Just change the function in solution.py any way you like or substitute it entirely inside ```custom-bench.py```.
 
 
-Have fun and happy hacking ;)
+The score to beat with an automatic inference solution that does not use the provided dialect information is the one by DuckDB-Auto which is currently at: 9.646808 (unweighted)
 
-The score to beat with an automatic inference solution is the one by DuckDB-Auto which is currently at: 
+Have fun and happy hacking ;)
 
 
 # Boring Section:
