@@ -1,4 +1,4 @@
-FROM r-base:4.2.1
+FROM r-base:4.4.2
 
 WORKDIR /app
 COPY ./sut/rcsv/rcsv.R ./

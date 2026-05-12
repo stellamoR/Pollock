@@ -1,4 +1,4 @@
-FROM python:3.10.5
+FROM python:3.12-slim
 
 WORKDIR /app
 COPY ./sut/my/mysq.py ./

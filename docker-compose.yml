@@ -1,4 +1,3 @@
-version: "3"
 services:
   mariadb-server:
     image: mariadb:10.9.3

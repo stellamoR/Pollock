@@ -1,7 +1,9 @@
-FROM python:3.10.5-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 COPY ./sut/pycsv/pycsv.py ./
+COPY ./sut/pycsv/pycsv-requirements.txt ./
+COPY ./sut/utils.py ./
 
-RUN pip install pandas==1.4.3
+RUN pip install --no-cache-dir -r pycsv-requirements.txt
 CMD ["python3", "pycsv.py"]
