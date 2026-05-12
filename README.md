@@ -1,188 +1,106 @@
-# Pollock
-Pollock is a benchmark for data loading on character-delimited files, developed at the Information Systems Group of the Hasso Plattner Institute.
-The highlights of our experiments are these results, obtained on 17 different systems under test:
-<div align="center">
+!This is not the original readme but an attempt at explaining what is going on from Robin (Student Research Assistant at UTN's Data Systems Lab)
 
-## Pollock Score (ranked by simple score)
+# Explanation of the Pollock Benchmark Structure
 
-| System under test        | Pollock score (simple)  | Pollock score (weighted)  |
-| ------------------------ | ----------------------- | ------------------------- |
-| DuckDB 1.2               | **9.961**               | **9.599**                 |
-| SQLite 3.39.0            | **9.955**               | **9.375**                 |
-| UniVocity 2.9.1          | **9.939**               | **7.936**                 |
-| LibreOffice Calc 7.3.6   | **9.925**               | **7.833**                 |
-| SpreadDesktop            | **9.929**               | **9.597**                 |
-| SpreadWeb                | **9.721**               | **9.431**                 |
-| Python native csv 3.10.5 | **9.721**               | **9.436**                 |
-| Pandas 1.4.3             | **9.895**               | **9.431**                 |
-| MySQL 8.0.31             | **9.587**               | **7.484**                 |
-| Mariadb 10.9.3           | **9.585**               | **7.483**                 |
-| CleverCSV 0.7.4          | **9.193**               | **9.453**                 |
-| DuckDB 1.2 (Auto)        | **9.075**               | **8.439**                 |
-| R native csv 4.2.1       | **7.792**               | **6.405**                 |
-| CSVCommons 1.9.0         | **6.647**               | **9.253**                 |
-| OpenCSV 5.6              | **6.632**               | **7.746**                 |
-| Dataviz                  | **5.003**               | **5.152**                 |
-| Hypoparsr 0.1.0          | **3.888**               | **4.372**                 |
-| PostgreSQL 15.0          | **0.136**               | **6.961**                 |
+## 0. Vanilla Benchmark Overview
+1. The polluter writes polluted versions of the ```results/source.csv``` file into ```data/polluted_files/csv/```. It also writes the expected output of files that are read with the correct grammar (which is known by the polluter) into ```data/polluted_files/clean/```. These serve as the basis for comparison with what the SuTs have read from the polluted files later. On top of this, the polluter also writes the dialect information (e.g. delimiter, column datatypes, quote character etc.) into ```data/polluted_files/parameters/```
+2. The different SuTs read the files from ```data/polluted_files/csv/```. 
+3. The different SuTs write the content of their respective databases/dataframes etc. into ```results/<sut>/polluted_files/loading/``` 
+4. The evaluation script ```evaluate.py``` uses (kind of expensive) Multi-Set operations to compare the outputs of the SuTs (```results/<sut>/polluted_files/loading/```) with the expected clean outputs in (```data/polluted_files/clean/```). It does so on a per-row (record) and per-cell basis. The final score is a mix of loading-success and recall + precision metrics (for formula, see the more detailed explanation of the Evaluation below)
 
 
-</div>
+## 1. Pollution - more details
 
-## Repository structure
+The file ```results/source.csv``` with 83 data rows + a header is the ONLY file that is polluted. 
+Every polluted file is derived from ```results/source.csv```.
+The file properties were chosen to include various datatypes and a length that matches the median of the survey done on government CSV-files in the Pollock Paper.
 
-The structure of the repository is the following:
-
-- `open_data_crawl`: contains the scripts used to crawl the open data portals of different countries to sample the statistics about file types.
-- `survey`: contains the csv files used in the paper survey, and their annotations with respect to dialect and pollutions.
-- `data/survey_sample`: contains the sample of 100 files used in the paper experiment, with their clean versions and loading parameters.
-- `data/polluted_files`: contains the generated polluted files for the Pollock benchmark.
-- `pollock` is the main source folder for the Pollock benchmark: it contains the files necessary to generate the polluted versions of an input file (`polluters_base.py` and `polluters_stdlib.py`) as well as the files with the metrics to evaluate results of data loading.
-- `sut` is the source folder that contains the scripts used to benchmark given systems. These scripts can be in bash, python, or heterogeneous format, depending on the specific tool that is under test.
-- `results` contains the results of loading both the polluted files and the survey files for each of the systems evaluated. The folder will also contain `.csv` files that summarize the evaluation results - for each of the systems under test and for all of them together (`aggregate_results_{dataset}.csv`, `global_results_{dataset}.csv`).
-- The file `docker-compose.yml` contains a list of the docker images that are used to run the benchmark. The images are built from the `Dockerfile` files in the `sut` folder.
-- The two files `pollute_main.py` and `evaluate.py` are used to run the pollution of a source file and to evaluate all systems under test that have a folder in `results/loading`
+The paper describes the pollution process further but basically it works like this:  
+**Take the base-dialect of the ```results/source.csv``` file and change things about this dialect. Think: separator, quote character, escape character, header/no header/multi-header.**
+Sometimes this is done on a per-line or even per-line + per-column level. The type of pollution is indicated in the filename of the csv file.
+**Additionally, it does things like adding additional stray quote characters into fields or leave out a separator**. These pollutions can change what the semantic content of a file is, which is why the benchmark has to save a clean version of each polluted file in ```data/polluted_files/clean/```.
 
 
-## Running the benchmark
+In a few cases, the mapping from a pollution to "What should be the actual expected clean outcome" can be ambiguous. e.g. What is the correct way of parsing a header with 3 rows?
 
-The results of the Pollock benchmark can be obtained in three steps:
-
-    1. Generating the polluted versions of the source files
-    2. Loading the polluted files in each SUT.
-    3. Calculating the Pollock scores with the output files for each SUT.
-
-For convenience, in this repository we already provide the intermediate artifacts necessary to run the steps 2. and 3., so that our results can be reproduced with different degrees of completeness.
-We include results for 17 different systems:
- - 6 csv loading modules: `clevercsv`,`csvcommons`,`hypoparsr`,`opencsv`,`pandas`,`pycsv`,`rcsv`, `univocity`
- - 5 rdbms: `mariadb`,`mysql`,`postgres`,`sqlite`, `duckdb`
- - 3 spreadsheet systems: `libreoffice`,`spreaddesktop`,`spreadweb`
- - A data visualization tool, `dataviz`
-
-### Step 1: Generating polluted files
-The code for running the benchmark is written using Docker (and docker-compose).
-The following command will build the docker image to generate the polluted files:
-
-    docker-compose up --build pollution
-
-After this step, the set of benchmark files are contained in the folder `data/polluted_files`.
-Inside this folder there are three sub-folders: `csv` containing the generated polluted files in the .csv format, 
-`clean` containing the cleaned versions of the generated files, and `parameters` containing JSON files storing the corresponding loading parameters for each file.
-The files in the repository uses Git Large File Storage (LFS), so to correctly load their contents use:
-```git lfs checkout```.
-
-### Step 2: Loading polluted files in each SUT
-Once the folder `data/polluted_files/` contains the polluted files, the next step is to load them in each of the systems under test. 
-If a unix-based systems is used, the following one-liner executes loading for all SUT:
-
-    chmod +x benchmark.sh; ./benchmark.sh    
-
-Otherwise, loading can be done by running the following docker-compose commands in a sequence:
-
-<details>
-<summary>Loading commands</summary>
-
-    docker-compose up --detach mariadb-server mysql-server postgres-server
-    docker-compose up opencsv-client
-    docker-compose up csvcommons-client
-    docker-compose up univocity-client
-    docker-compose up pycsv-client
-    docker-compose up pandas-client
-    docker-compose up rcsv-client
-    docker-compose up clevercs-client
-    docker-compose up rhypoparsr-client
-    docker-compose up libreoffice-client
-    docker-compose up sqlite-client
-    
-    docker-compose up postgres-client
-    docker-compose up mariadb-client
-    docker-compose up mysql-client
-    docker-compose up duckdbparse-client
-    docker-compose up duckdbauto-client
-</details>
-
-At the end of the loading stages, the results will be available in the folder `results/{sut}/polluted_files`, where `{sut}` stands for a given SUT name.
-Alternatively, the results of this step can be found in the repository.
-If users wish to skip step 2, they can extract each systems' archive in the folder `results/{sut}`.
-We also include archives for the `spreadweb`, `spreaddesktop`, and `dataviz` systems, for which due to their commercial nature, we do not share the scripts to obtain the output files.
-
-### Step 3: Pollock scores calculation
-To run the evaluation step, use the command:
-
-    docker-compose up evaluate
-
-The script outputs the benchmark scores for each of the polluted files in a csv file under `results/{sut}/` for each of the systems.
-Moreover, all results are saved in the file `results/global_results_polluted_files.csv` and aggregated in the file `results/aggregate_results_polluted_files.csv`.
-The script also outputs the results of the benchmark with the simple and weighted Pollock scores.
-
-## Pollution list
-For the complete list of benchmark files, expand the following table.
-<details>
-<summary>Pollock files</summary>
-
-| Pollution level                                | File name                          | Pollution type                                                                                                                       |
-|------------------------------------------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| Standard file                                  | source.csv                         | Standard file                                                                                                                        |
-| File and table pollution (12 files)            | file_no_payload.csv                | Empty file, with a size of 0 bytes                                                                                                   |
-|                                                | file_no_trailing_newline.csv       | File terminated without a newline sequence                                                                                           |
-|                                                | file_double_trailing_newline.csv   | File terminated with a double newline sequence                                                                                       | 
-|                                                | file_no_header.csv                 | File where there is no header row                                                                                                    |
-|                                                | file_header_multirow_2.csv         | File where there are two header rows.                                                                                                |
-|                                                | file_header_multirow_3.csv         | File where are three header rows.                                                                                                    |
-|                                                | file_preamble.csv                  | File with a preamble rows delimited from the rest of the file with an empty row.                                                     |
-|                                                | file_multitable_less.csv           | File with two tables, the first with less columns than the second.                                                                   |
-|                                                | file_multitable_more.csv           | File with two tables, the first with more columns than the second.                                                                   |
-|                                                | file_multitable_same.csv           | File with two tables with the same number of columns.                                                                                |
-|                                                | file_header_only.csv               | File with only header row.                                                                                                           |
-|                                                | file_one_data_row.csv              | File with a single data row.                                                                                                         |
-| Inconsistent number of delimiters (1428 files) | row_less_sep_rowX_colY.csv         | File where row X has a missing delimiter corresponding to column Y (672 files, one for each row/col combination except first column) |
-|                                                | row_more_sep_rowX_colY.csv         | File where row X has an extra delimiter corresponding to column Y (756 files, one for each row/col combination)                      |
-| Structural character change (849 files)        | file_field_delimiter_0x20.csv      | File where fields are delimited with space.                                                                                          |
-|                                                | file_field_delimiter_0x2C_0x20.csv | File where fields are delimited with comma and space.                                                                                |
-|                                                | file_field_delimiter_0x3B.csv      | File where fields are delimited with semicolon.                                                                                      |
-|                                                | file_field_delimiter_0x9.csv       | File where fields are delimited with tab.                                                                                            |
-|                                                | file_quotation_char_0x27.csv       | File where the quotation character is the apostrophe.                                                                                |
-|                                                | file_escape_char_0x5C.csv          | File where the escape character is the backslash.                                                                                    |
-|                                                | file_escape_char_0x00.csv          | File where the escape character is missing.                                                                                          |
-|                                                | file_record_delimiter_0xA.csv      | File where rows end with the LF character.                                                                                           |
-|                                                | file_record_delimiter_0xD.csv      | File where rows end with the CR character.                                                                                           |
-|                                                | row_extra_quoteX_colY.csv          | File where the cell in row X and column Y has an extra, unescaped quotation character (756 files, one for each row/col combination)  |
-|                                                | row_field_delimiter_X_0x20.csv     | File where only row X is delimited with the space character (84 files one for each row)                                              |
-
-
-</details>
-
-## Extra: Benchmark a single SUT
-To benchmark a specific system, you can use the Docker configurations in the file `docker-compose.yml`.
-For example, to benchmark the python csv module:
-
-`docker-compose up pycsv-client`
-
-To benchmark the RDBMS systems, make sure to first run the corresponding server first, for example:
-
-`docker-compose up postgres-server`
-and, once the server is up and running:
-`docker-compose up postgres-client`
-To benchmark a specific system, run the `benchmark.py` script with the `--sut` argument followed by the name of the corresponding system folder, e.g.:
-
-`docker-compose run evaluate python3 evaluate.py --sut pycsv-client`
-
-The script reports the overall success, completeness, and conciseness score and outputs the specific results for each of the benchmark files in a CSV file, whose path can be specified with the --result parameter.
-(This command updates the result CSV files).
-
-For the full list of parameters, run:
-
-`docker-compose run evaluate python3 evaluate.py --help`
-
-## Extra: Change experiment dataset
-The repository contains a .env file that every scripts reads from, specifying which dataset to run the experiments on.
-The default setting is the `polluted_file` dataset, to run experiments for the survey sample, simply comment out the first line and uncomment the second line of the file.
-To experiment with the survey sample file, its content should be as follows:
 ```
-    #DATASET=polluted_files
-    DATASET=survey_sample
+col1, col2
+col1, col2
+col1, col2
 ```
-To evaluate the results of the survey sample, run evaluate script with:
+According to the benchmark, the resulting header should look like this ```"col1 col1 col1", "col2 col2 col2"```. While this is not illogical, it is just a convention and thus up for debates. Who is to say that there should not be ```\n``` or any other delimiter other than spaces between the occurrences of "col1"?
+
+
+## 2 + 3 SuT CSV parsing - more details
+
+Every SuT tries to read the polluted files in ```data/polluted_files/csv/```. After it is read into the SuT, it is dumped to ```results/<sut>/polluted_files/loading/``` using a shared csv-dialect (the one by pandas .to_csv() function).
+
+**Some of the systems (e.g. duckdbparse) are given the dialect** info from ```data/polluted_files/parameters/```, others (e.g. duckdbauto or clevercsv) infer them automatically. In general, the benchmark tried to be a "best effort" benchmark, meaning that the benchmark score directly correlates with the number of settings a given SuT has to deal with different dialects. In general comparisons between SuTs only make sense if they are either both using the supplied metadata (e.g. duckdbparse, sqlite) or not using it at all (e.g. duckdbauto, clevercsv).
+
+This is heavily dockerized (one docker for every SuT) in the default Pollock  [GitHub repo](https://github.com/HPI-Information-Systems/Pollock). Which does not mean it runs for every SuT as many struggle from a pandas<->numpy dependency conflict due to non-pinned versions. This problem is probably fixed by now in this version of the repo. At least for the SuTs that seem useful to re-run, as the already loaded csvs per SuT are already provided in the repo.
+
+## 4 Evaluation - more details
+
+The final Benchmark score is calculated as follows:
+
 ```
-    docker-compose run evaluation python3 evaluate.py --dataset survey_sample
+Score = mean(success)
+  + mean(header_precision) + mean(header_recall) + mean(header_f1)
+  + mean(record_precision) + mean(record_recall) + mean(record_f1)
+  + mean(cell_precision)   + mean(cell_recall)   + mean(cell_f1)
 ```
+Each component is from [0,1], so the maximum score is 10.
+
+The evaluation script writes the scores per file into ```results/<sut>/polluted_files```.
+
+Since not every pollution is equally likely to be found "in the wild", the Pollock score also comes in a weighted variant, which bases its weightings on a survey of governmental csv files done for the Pollock paper. Note: This weighted score is only accurate when using the original ```results/source.csv``` since the number times a pollution is used depends on the row + column counts of the polluted file and the weights are were hardcoded by the authors in ```pollock_weights.json```
+
+
+# Running the Pipeline 
+
+## 1. Pollution (only if you want to try the pollution on a custom file, otherwise skip)
+
+Put your csv file file into ```data/<dataset_name>/```
+
+Generate polluted variants (number depends on n_rows + n_cols of your file)
+
+```bash
+python3 pollute_main.py --source data/<dataset_name>/<your_csv_file>.csv --output data/<dataset_name>
+```
+
+
+## 2. Run all Python SuTs:
+
+```bash
+scripts/run_python_suts.sh <dataset_name>
+```
+
+or just
+```
+scripts/run_python_suts.sh
+```
+to run on the default (polluted_files) folder in ```./data```  
+or 
+```
+DATASET=<dataset_name> python3 ./sut/<sut_name>/<sut_script>.py
+```
+to run a specific python sut against a custom dataset.
+
+
+**Note1:** If you rerun this, make sure to **delete the old results output** before.  ```rm -r results/*/<dataset_name>```  
+**Note2:** there are some other SuTs that have to be run with docker (e.g. because they require java or a db-server)
+
+
+## 3. Evaluation
+
+```python3 evaluate.py --dataset <dataset_name>```
+
+
+# Getting Started with your own Approach
+
+A template for a custom SuT is provided in ```sut/custom```. Just change the function in solution.py any way you like or substitute it entirely inside ```custom-bench.py```.
+
+
+Have fun and happy hacking ;)
+
+The score to beat with an automatic inference solution is the one by DuckDB-Auto which is currently at: 
