@@ -24,7 +24,7 @@ OUT_DIR = abspath(f'/results/{sut}/{dataset}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{dataset}/')
 TMP_DIR = abspath(f'/results/{sut}/loading/xlsx/')
 
-N_REPETITIONS = 3
+N_REPETITIONS = int(os.environ.get("N_REPETITIONS", 3))
 times_dict = {}
 
 benchmark_files = listdir(IN_DIR)

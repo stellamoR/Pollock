@@ -20,7 +20,7 @@ os.makedirs(IN_DIR, exist_ok=True)
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(TIME_DIR, exist_ok=True)
 
-N_REPETITIONS = 3
+N_REPETITIONS = int(os.environ.get("N_REPETITIONS", 3))
 
 times_dict = {}
 benchmark_files = os.listdir(IN_DIR)

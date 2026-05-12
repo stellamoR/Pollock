@@ -61,7 +61,7 @@ PARAM_DIR = abspath(f'/data/{dataset}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{dataset}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{dataset}/')
 
-N_REPETITIONS = 3
+N_REPETITIONS = int(os.environ.get("N_REPETITIONS", 3))
 
 times_dict = {}
 cnx = connect_to_db()

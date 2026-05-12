@@ -2,7 +2,7 @@
 
 # Explanation of the Pollock Benchmark Structure
 
-## 0. Benchmark Overview
+## 0. Vanilla Benchmark Overview
 1. The polluter writes polluted versions of the ```results/source.csv``` file into ```data/polluted_files/csv/```. It also writes the expected output of files that are read with the correct grammar (which is known by the polluter) into ```data/polluted_files/clean/```. These serve as the basis for comparison with what the SuTs have read from the polluted files later. On top of this, the polluter also writes the dialect information (e.g. delimiter, column datatypes, quote character etc.) into ```data/polluted_files/parameters/```
 2. The different SuTs read the files from ```data/polluted_files/csv/```. 
 3. The different SuTs write the content of their respective databases/dataframes etc. into ```results/<sut>/polluted_files/loading/``` 
@@ -18,17 +18,17 @@ The file properties were chosen to include various datatypes and a length that m
 The paper describes the pollution process further but basically it works like this:  
 **Take the base-dialect of the ```results/source.csv``` file and change things about this dialect. Think: separator, quote character, escape character, header/no header/multi-header.**
 Sometimes this is done on a per-line or even per-line + per-column level. The type of pollution is indicated in the filename of the csv file.
-Additionally, it does things like adding additional stray quote characters into fields or leave out a separator. These pollutions can change what the semantic content of a file is, which is why the benchmark has to save a clean version of each polluted file in ```data/polluted_files/clean/```.
+**Additionally, it does things like adding additional stray quote characters into fields or leave out a separator**. These pollutions can change what the semantic content of a file is, which is why the benchmark has to save a clean version of each polluted file in ```data/polluted_files/clean/```.
 
 
-In a few the mapping from a pollution to "What should be the actual expected clean outcome" can be ambiguous. e.g. What is the correct way of parsing a header with 3 rows?
+In a few cases, the mapping from a pollution to "What should be the actual expected clean outcome" can be ambiguous. e.g. What is the correct way of parsing a header with 3 rows?
 
 ```
 col1, col2
 col1, col2
 col1, col2
 ```
-According to the benchmark, the resulting header should look like this ```"col1 col1 col1", "col2 col2 col2"```. While this is not illogical, it is just a convention and thus up for debates. Who is to say that there should not be ```\n``` instead of spaces between the occurrences of "col1"? (or other logical ground-truths)
+According to the benchmark, the resulting header should look like this ```"col1 col1 col1", "col2 col2 col2"```. While this is not illogical, it is just a convention and thus up for debates. Who is to say that there should not be ```\n``` or any other delimiter other than spaces between the occurrences of "col1"?
 
 
 ## 2 + 3 SuT CSV parsing - more details
@@ -58,121 +58,49 @@ Since not every pollution is equally likely to be found "in the wild", the Pollo
 
 # Running the Pipeline 
 
-## 1. Pollution (only if you were to try it on a custom file)
+## 1. Pollution (only if you want to try the pollution on a custom file, otherwise skip)
 
-Put file into ```data/<name_of_your_choosing>/source.csv```
+Put your csv file file into ```data/<dataset_name>/```
 
 Generate polluted variants (number depends on n_rows + n_cols of your file)
 
-```python3 pollute_main.py --source data/<name_of_your_choosing>/source.csv --output data/<name_of_your_choosing>```
+```bash
+python3 pollute_main.py --source data/<dataset_name>/<your_csv_file>.csv --output data/<dataset_name>
+```
 
 
 ## 2. Run all Python SuTs:
 
-```scripts/run_python_suts.sh <name_of_your_choosing>```
+```bash
+scripts/run_python_suts.sh <dataset_name>
+```
 
-or just ```scripts/run_python_suts.sh``` to run on the default (polluted_files) folder in ```./data```
+or just
+```
+scripts/run_python_suts.sh
+```
+to run on the default (polluted_files) folder in ```./data```  
+or 
+```
+DATASET=<dataset_name> python3 ./sut/<sut_name>/<sut_script>.py
+```
+to run a specific python sut against a custom dataset.
 
-Note: there are some other SuTs that have to be run with docker (e.g. because they require java or libreoffice)
+
+**Note1:** If you rerun this, make sure to **delete the old results output** before.  ```rm -r results/*/<dataset_name>```  
+**Note2:** there are some other SuTs that have to be run with docker (e.g. because they require java or a db-server)
 
 
 ## 3. Evaluation
 
-```python3 evaluate.py --dataset <name_of_your_choosing> ```
-
-
+```python3 evaluate.py --dataset <dataset_name>```
 
 
 # Getting Started with your own Approach
 
-A template for a custom SuT is provided in ```sut/custom```
+A template for a custom SuT is provided in ```sut/custom```. Just change the function in solution.py any way you like or substitute it entirely inside ```custom-bench.py```.
 
 
+Have fun and happy hacking ;)
 
-# Deprecated below
-
-# Running Pollock on a custom file
-
-## 1. Pollute your file
-
-Use the helper script from the repository root:
-
-```bash
-scripts/pollute.sh myfile.csv output/
-```
-
-This mounts your file into the pollution container and runs all pollution variants. When it finishes you'll find:
-
-| Directory | Contents |
-|---|---|
-| `output/csv/` | Polluted CSV variants |
-| `output/clean/` | Clean reference versions |
-| `output/parameters/` | Dialect parameters per file (JSON) |
-
-> **Note (manual alternative):** If you prefer to run the Docker command yourself, or need more control:
-> ```bash
-> docker-compose run --rm \
->   -v $(pwd)/myfile.csv:/app/myfile.csv \
->   -v $(pwd)/output:/app/output \
->   pollution \
->   python3 /app/pollute_main.py --source /app/myfile.csv --output /app/output
-> ```
-> Omitting `--source` and `--output` falls back to `./results/source.csv` and `./data/polluted_files`.
-
-## 2. Run a benchmark SUT (example DuckDBParse)
-
-Each SUT reads from `/data/polluted_files` inside the container. Mount your output directory there:
-
-```bash
-docker-compose run --rm \
-  -v $(pwd)/output:/data/polluted_files \
-  duckdbparse-client
-```
-
-Results land in `./results/duckdbparse/` on the host (already wired in docker-compose.yml).
-
-If a previous benchmark run exists for this SUT, clear it first or the script will skip all files:
-
-```bash
-rm -rf results/duckdbparse/polluted_files/
-```
-
-To run against the default `./data/polluted_files` folder, just use:
-
-```bash
-docker-compose up duckdbparse-client
-```
-
-## 3. Run all benchmark SUTs
-
-(on the standard source file used by the authors)
-To run all SUTs at once, use `benchmark.sh`:
-
-```bash
-chmod +x benchmark.sh && ./benchmark.sh
-```
-
-Note that not all SUTs are currently working due to dependency issues — expect some containers to fail. The ones confirmed working are `duckdbauto` and `duckdbparse`.
-
-## 4. Evaluate
-
-To score a specific SUT against your custom file, mount your output directory as the dataset:
-
-```bash
-docker-compose run --rm \
-  -v $(pwd)/output:/app/data/polluted_files \
-  evaluate python3 /app/evaluate.py --sut duckdbparse
-```
-
-To score all SUTs with results folders present:
-
-```bash
-docker-compose run --rm \
-  -v $(pwd)/output:/app/data/polluted_files \
-  evaluate python3 /app/evaluate.py
-```
-
-Aggregate scores are saved to `results/aggregate_results_polluted_files.csv`.
-
-Note: The weighted pollock score might be off when using a custom source file because the authors calculated the weights based on the number of files generated with their source.csv and do not update them for other csvs.
-
+# 

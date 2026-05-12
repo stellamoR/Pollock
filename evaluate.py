@@ -29,7 +29,7 @@ SUB_MEASURES = {"table" : "file_double.*|file_header.*|file_no.*|file_one.*|file
 def evaluate_single_file(filename:str, dataset:str, sut:str, verbose=False, n_jobs=1):
     sut_dir = f"results/{sut}/{dataset}/loading/"
     clean_path = f"data/{dataset}/clean/{filename}"
-    loaded_path = f"{sut_dir}/{filename}_converted.csv"
+    loaded_path = f"{sut_dir}{filename}_converted.csv"
 
     dict_measures = {"file": filename}
     if verbose:
@@ -102,7 +102,8 @@ def main():
     N_JOBS = int(args.njobs)
 
     verbose = bool(args.verbose)
-    systems = [s for s in next(os.walk(f"{RESULT_DIR}"))[1] if not (s== "archives")]
+    systems = [s for s in next(os.walk(f"{RESULT_DIR}"))[1]
+               if s != "archives" and os.path.isdir(f"{RESULT_DIR}/{s}/{dataset}/loading")]
 
     files= [f for f in os.listdir(f"data/{dataset}/csv") if f.endswith("csv")]
     aggregate = []

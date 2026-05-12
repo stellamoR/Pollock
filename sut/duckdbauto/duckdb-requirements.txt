@@ -1,4 +1,4 @@
-numpy>=1.14
+numpy==2.4.4
 pybind11>=2.6.0
 setuptools_scm>=6.3
 setuptools>=61
@@ -6,4 +6,4 @@ cibuildwheel>=2.16.2
 mypy
 psutil>=5.9.0
 fsspec
-pandas
+pandas==3.0.3

@@ -46,6 +46,7 @@ public class JCSV {
     public static final String PARAM_DIR = "/data/"+dataset+"/parameters/";
     public static final String OUT_DIR = "/results/"+sut+"/"+dataset+"/loading/";
     public static final String TIME_DIR = "/results/"+sut+"/"+dataset;
+    public static final int N_REPETITIONS = System.getenv("N_REPETITIONS") != null ? Integer.parseInt(System.getenv("N_REPETITIONS")) : 3;
 
 
     public static String processFile(File file, int i, int total) throws IOException {
@@ -108,7 +109,7 @@ public class JCSV {
         }
         Charset charset = Charset.forName(encoding);
 
-        for (int j = 0; j < 3; j++) {
+        for (int j = 0; j < N_REPETITIONS; j++) {
             int n_rows = 0;
             double duration = 0;
             long startTime = System.nanoTime();
@@ -168,7 +169,9 @@ public class JCSV {
         }
         try {
             FileWriter timeWriter = new FileWriter(TIME_DIR + "/" + sut + "_time.csv");
-            timeWriter.write("filename," + sut + "_time_0," + sut + "_time_1," + sut + "_time_2\n");
+            StringBuilder header = new StringBuilder("filename");
+            for (int i = 0; i < N_REPETITIONS; i++) header.append(",").append(sut).append("_time_").append(i);
+            timeWriter.write(header + "\n");
             for (String time : timeResults) {
                 timeWriter.write(time + "\n");
             }

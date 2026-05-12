@@ -6,8 +6,8 @@ import sys
 
 sys.path.insert(0, join(dirname(__file__), '..'))
 from utils import print, save_time_df, load_parameters
-"""
-(filepath_or_buffer, 
+r"""
+(filepath_or_buffer,
 delimiter=None, Delimiter to use. If sep is None, the Python parsing engine will be used and automatically detect the separator.
             In addition, separators longer than 1 character and different from '\s+' will be interpreted as regex. 
             Note that regex delimiters are prone to ignoring quoted data. Regex example: '\r\t'.
@@ -48,7 +48,7 @@ TIME_DIR = f'results/{sut}/{DATASET}/'
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(TIME_DIR, exist_ok=True)
 
-N_REPETITIONS = 3
+N_REPETITIONS = int(os.environ.get("N_REPETITIONS", 3))
 
 times_dict = {}
 benchmark_files = os.listdir(IN_DIR)

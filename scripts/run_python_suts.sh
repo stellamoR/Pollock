@@ -11,17 +11,19 @@
 
 set -euo pipefail
 
-if [[ $# -lt 1 ]]; then
-    echo "Usage: $0 <dataset_name> [sut1 sut2 ...]"
-    echo "  dataset_name  Name of the folder under data/ (e.g. polluted_files)"
-    echo "  sut ...       Optional subset of SUTs (default: all Python SUTs)"
-    echo ""
-    echo "Python SUTs: duckdbauto duckdbparse pandas pycsv clevercs"
-    exit 1
+# Load .env if present (does not override already-exported variables)
+if [[ -f ".env" ]]; then
+    set -o allexport
+    source .env
+    set +o allexport
 fi
 
-DATASET="$1"
-shift
+if [[ $# -ge 1 && "$1" != --* ]]; then
+    DATASET="$1"
+    shift
+else
+    DATASET="${DATASET:-polluted_files}"
+fi
 
 ALL_SUTS=(duckdbauto duckdbparse pandas pycsv clevercs)
 if [[ $# -gt 0 ]]; then
@@ -64,5 +66,3 @@ done
 
 echo ""
 echo "Done. Results are in results/*/$DATASET/"
-echo "Run evaluation with:"
-echo "  python3 evaluate.py --dataset $DATASET"
