@@ -1,16 +1,22 @@
 import csv
 from os import listdir
-from os.path import abspath, join
-from utils import print, save_time_df, load_parameters
+from os.path import join, dirname
 import os
+import sys
 import time
 
+sys.path.insert(0, join(dirname(__file__), '..'))
+from utils import print, save_time_df, load_parameters
+
 sut = 'pycsv'
-DATASET = os.environ['DATASET']
-IN_DIR = abspath(f'/data/{DATASET}/csv/')
-PARAM_DIR = abspath(f'/data/{DATASET}/parameters')
-OUT_DIR = abspath(f'/results/{sut}/{DATASET}/loading/')
-TIME_DIR = abspath(f'/results/{sut}/{DATASET}/')
+DATASET = os.environ.get('DATASET', 'polluted_files')
+IN_DIR = f'data/{DATASET}/csv/'
+PARAM_DIR = f'data/{DATASET}/parameters'
+OUT_DIR = f'results/{sut}/{DATASET}/loading/'
+TIME_DIR = f'results/{sut}/{DATASET}/'
+
+os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs(TIME_DIR, exist_ok=True)
 N_REPETITIONS = 3
 
 TO_SKIP = []

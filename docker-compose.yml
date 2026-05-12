@@ -116,8 +116,8 @@ services:
       context: .
       dockerfile: ./sut/pandas/Dockerfile
     volumes:
-      - ./results/pandas:/results/pandas
-      - ./data:/data
+      - ./results/pandas:/app/results/pandas
+      - ./data:/app/data
       - ./sut/pandas/:/app/
       - ./sut/utils.py:/app/utils.py
   duckdbparse-client:
@@ -127,8 +127,8 @@ services:
       context: .
       dockerfile: ./sut/duckdbparse/Dockerfile
     volumes:
-      - ./results/duckdbparse:/results/duckdbparse
-      - ./data:/data
+      - ./results/duckdbparse:/app/results/duckdbparse
+      - ./data:/app/data
       - ./sut/duckdbparse/:/app/
       - ./sut/utils.py:/app/utils.py
   duckdbauto-client:
@@ -138,8 +138,8 @@ services:
       context: .
       dockerfile: ./sut/duckdbauto/Dockerfile
     volumes:
-      - ./results/duckdbauto:/results/duckdbauto
-      - ./data:/data
+      - ./results/duckdbauto:/app/results/duckdbauto
+      - ./data:/app/data
       - ./sut/duckdbauto/:/app/
       - ./sut/utils.py:/app/utils.py
   opencsv-client:
@@ -159,8 +159,8 @@ services:
       context: .
       dockerfile: ./sut/pycsv/Dockerfile
     volumes:
-      - ./results/pycsv:/results/pycsv
-      - ./data:/data
+      - ./results/pycsv:/app/results/pycsv
+      - ./data:/app/data
       - ./sut/pycsv/:/app/
       - ./sut/utils.py:/app/utils.py
   rcsv-client:
@@ -190,8 +190,8 @@ services:
       context: .
       dockerfile: ./sut/clevercs/Dockerfile
     volumes:
-      - ./results/clevercs:/results/clevercs
-      - ./data:/data
+      - ./results/clevercs:/app/results/clevercs
+      - ./data:/app/data
       - ./sut/clevercs/:/app/
       - ./sut/utils.py:/app/utils.py
   libreoffice-client:

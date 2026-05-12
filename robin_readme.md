@@ -58,11 +58,27 @@ Since not every pollution is equally likely to be found "in the wild", the Pollo
 
 # Running the Pipeline 
 
-## 1. Pollution
+## 1. Pollution (only if you were to try it on a custom file)
 
-## 2. SuT loading of polluted files
+Put file into ```data/<name_of_your_choosing>/source.csv```
+
+Generate polluted variants (number depends on n_rows + n_cols of your file)
+
+```python3 pollute_main.py --source data/<name_of_your_choosing>/source.csv --output data/<name_of_your_choosing>```
+
+
+## 2. Run all Python SuTs:
+
+```scripts/run_python_suts.sh <name_of_your_choosing>```
+
+or just ```scripts/run_python_suts.sh``` to run on the default (polluted_files) folder in ```./data```
+
+Note: there are some other SuTs that have to be run with docker (e.g. because they require java or libreoffice)
+
 
 ## 3. Evaluation
+
+```python3 evaluate.py --dataset <name_of_your_choosing> ```
 
 
 
@@ -70,9 +86,6 @@ Since not every pollution is equally likely to be found "in the wild", the Pollo
 # Getting Started with your own Approach
 
 A template for a custom SuT is provided in ```sut/custom```
-
-
-
 
 
 

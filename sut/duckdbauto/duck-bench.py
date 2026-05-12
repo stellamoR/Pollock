@@ -1,16 +1,19 @@
-from os.path import join, abspath
+from os.path import join, dirname
 import duckdb
 import time
 import os
+import sys
+
+sys.path.insert(0, join(dirname(__file__), '..'))
 from utils import print, save_time_df, load_parameters
 import pandas as pd
 
 sut='duckdbauto'
 DATASET = os.environ.get('DATASET', 'polluted_files')
-IN_DIR = abspath(f'/data/{DATASET}/csv/')
-PARAM_DIR = abspath(f'/data/{DATASET}/parameters')
-OUT_DIR = abspath(f'/results/{sut}/{DATASET}/loading/')
-TIME_DIR = abspath(f'/results/{sut}/{DATASET}/')
+IN_DIR = f'data/{DATASET}/csv/'
+PARAM_DIR = f'data/{DATASET}/parameters'
+OUT_DIR = f'results/{sut}/{DATASET}/loading/'
+TIME_DIR = f'results/{sut}/{DATASET}/'
 
 # Ensure required directories exist
 os.makedirs(IN_DIR, exist_ok=True)

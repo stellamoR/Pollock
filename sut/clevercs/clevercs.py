@@ -1,16 +1,22 @@
 from os import listdir
 import os
-from os.path import abspath, join
+import sys
+from os.path import join, dirname
+
+sys.path.insert(0, join(dirname(__file__), '..'))
 from utils import print, save_time_df, load_parameters
 import clevercsv
 import time
 
 sut = 'clevercs'
-DATASET = os.environ['DATASET']
-IN_DIR = abspath(f'/data/{DATASET}/csv/')
-PARAM_DIR = abspath(f'/data/{DATASET}/parameters')
-OUT_DIR = abspath(f'/results/{sut}/{DATASET}/loading/')
-TIME_DIR = abspath(f'/results/{sut}/{DATASET}')
+DATASET = os.environ.get('DATASET', 'polluted_files')
+IN_DIR = f'data/{DATASET}/csv/'
+PARAM_DIR = f'data/{DATASET}/parameters'
+OUT_DIR = f'results/{sut}/{DATASET}/loading/'
+TIME_DIR = f'results/{sut}/{DATASET}'
+
+os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs(TIME_DIR, exist_ok=True)
 N_REPETITIONS = 3
 
 times_dict = {}
