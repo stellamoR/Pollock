@@ -170,7 +170,7 @@ public class JCSV {
         try {
             FileWriter timeWriter = new FileWriter(TIME_DIR + "/" + sut + "_time.csv");
             StringBuilder header = new StringBuilder("filename");
-            for (int i = 0; i < N_REPETITIONS; i++) header.append(",").append(sut).append("_time_").append(i);
+            for (int k = 0; k < N_REPETITIONS; k++) header.append(",").append(sut).append("_time_").append(k);
             timeWriter.write(header + "\n");
             for (String time : timeResults) {
                 timeWriter.write(time + "\n");
