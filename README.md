@@ -1,8 +1,9 @@
 !This is not the original readme but an attempt at explaining what is going on from Robin (Student Research Assistant at UTN's Data Systems Lab)
 
-# Explanation of the Pollock Benchmark Structure
 
-## 0. Vanilla Benchmark Overview
+# <a name="explanation_pollock_structure"></a>Explanation of the Pollock Benchmark Structure 
+
+## 0. Vanilla Benchmark Overview (read first)
 1. The polluter writes polluted versions of the ```results/source.csv``` file into ```data/polluted_files/csv/```. It also writes the expected output of files that are read with the correct grammar (which is known by the polluter) into ```data/polluted_files/clean/```. These serve as the basis for comparison with what the SuTs have read from the polluted files later. On top of this, the polluter also writes the dialect information (e.g. delimiter, column datatypes, quote character etc.) into ```data/polluted_files/parameters/```
 2. The different SuTs read the files from ```data/polluted_files/csv/```. 
 3. The different SuTs write the content of their respective databases/dataframes etc. into ```results/<sut>/polluted_files/loading/``` 
@@ -67,7 +68,7 @@ Generate polluted variants (number depends on n_rows + n_cols of your file)
 ```bash
 python3 pollute_main.py --source data/<dataset_name>/<your_csv_file>.csv --output data/<dataset_name>
 ```
-
+**Note:** The explanations in ```Explanation of the Pollock Benchmark Structure```, the   ```dataset_name``` is ```polluted_files``` as it is the default one used by the original authors. This one is set in the ```.env``` file as the ```$DATASET``` variable default -> most scripts default back to ```polluted_files``` if no other dataset name is passed.
 
 ## 2. Run all Python SuTs:
 
@@ -104,3 +105,11 @@ A template for a custom SuT is provided in ```sut/custom```. Just change the fun
 Have fun and happy hacking ;)
 
 The score to beat with an automatic inference solution is the one by DuckDB-Auto which is currently at: 
+
+
+# Boring Section:
+## Things to note / limitations
+
+1. Some dependency versions were changed compared to the original Pollock Benchmark (e.g. Pandas is now 3.x and not 1.x anymore). This might lead to different scores
+2. DuckDB-Auto had a bug where it correctly read datetime but wrote it in a different format than expected by the benchmark, which is why its score in the original repo is lower.
+3. Some non-python SuTs require Docker. Not all of them were reproduced since some of them included version conflicts etc. The output in ```results/<sut>``` should still be the same as the one used for the paper, so if the evaluation script is run on them, it should still work.
