@@ -11,7 +11,8 @@ RUN make install
 
 WORKDIR /app
 COPY ./sut/sqlite/sqlite.py ./
+COPY ./sut/sqlite/sqlite-requirements.txt ./
 COPY ./sut/utils.py ./
-RUN pip3 install pandas==1.4.3
+RUN pip3 install --no-cache-dir -r sqlite-requirements.txt
 
 CMD ["python3", "sqlite.py"]
