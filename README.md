@@ -127,4 +127,5 @@ Have fun and happy hacking ;)
 
 1. Some dependency versions were changed compared to the original Pollock Benchmark (e.g. Pandas is now 3.x and not 1.x anymore). This might lead to different scores
 2. DuckDB-Auto had a bug where it correctly read datetime but wrote it in a different format than expected by the benchmark, which is why its score in the original repo is lower.
-3. Some non-python SuTs require Docker. Not all of them were reproduced since some of them included version conflicts etc. The output in ```results/<sut>``` should still be the same as the one used for the paper, so if the evaluation script is run on them, it should still work.
+3. Some non-python SuTs require Docker. Their original and mostly broken dependencies were updated and they should run now. However, the score might have changed due to changes in how csvs are parsed between the old and new versions.
+
