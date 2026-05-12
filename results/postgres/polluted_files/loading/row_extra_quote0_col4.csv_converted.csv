@@ -1,0 +1,4 @@
+Application Error
+zero-length delimited identifier at or near """"
+LINE 1: ...),"Qty" varchar(65535),"PRODUCTID" varchar(65535),""Price" v...
+                                                             ^

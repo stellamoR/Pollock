@@ -1,0 +1,4 @@
+Application Error
+1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''
+IGNORE 1 LINES 
+(`DATE`, `TIME`, `Qty`, `PRODUCTID`, `Price`, `ProductType`, `' at line 7

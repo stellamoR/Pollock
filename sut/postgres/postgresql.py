@@ -41,6 +41,9 @@ PARAM_DIR = abspath(f'/data/{dataset}/parameters')
 OUT_DIR = abspath(f'/results/{sut}/{dataset}/loading/')
 TIME_DIR = abspath(f'/results/{sut}/{dataset}/')
 
+os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs(TIME_DIR, exist_ok=True)
+
 N_REPETITIONS = int(os.environ.get("N_REPETITIONS", 3))
 
 times_dict = {}

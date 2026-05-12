@@ -1,0 +1,4 @@
+Application Error
+You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ''
+IGNORE 1 LINES 
+(`DATE`, `TIME`, `Qty`, `PRODUCTID`, `Price`, `ProductType`...' at line 6

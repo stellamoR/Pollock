@@ -1,0 +1,4 @@
+Application Error
+zero-length delimited identifier at or near """"
+LINE 1: ... KEY, "DATE" varchar(65535),"TIME" varchar(65535),""Qty" var...
+                                                             ^
